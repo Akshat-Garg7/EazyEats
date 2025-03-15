@@ -9,7 +9,7 @@ export default function Meals() {
     data: loadedMeals,
     isLoading,
     error,
-  } = useHttp('http://localhost:3000/meals', requestConfig, []);
+  } = useHttp('https://eazyeats-uxln.onrender.com/meals', requestConfig, []);
 
   if (isLoading) {
     return <p className="center">Fetching meals...</p>;
