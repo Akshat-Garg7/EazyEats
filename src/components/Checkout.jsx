@@ -21,7 +21,7 @@ export default function Checkout() {
   const userProgressCtx = useContext(UserProgressContext);
 
   const { data, error, sendRequest, clearData } = useHttp(
-    'http://localhost:3000/orders',
+    'https://eazyeats-uxln.onrender.com/orders',
     requestConfig
   );
 
