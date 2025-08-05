@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "upload": "node scripts/uploadImages.js"
+    "upload": "node scripts/uploadImages.js",
+    "postinstall": "npm rebuild sharp --platform=linux --arch=x64"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
