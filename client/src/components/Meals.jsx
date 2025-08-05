@@ -13,7 +13,7 @@ export default function Meals() {
     data: loadedMeals,
     isLoading,
     error,
-  } = useHttp('http://localhost:5000/api/menu-items', requestConfig, []);
+  } = useHttp(`${process.env.REACT_APP_API_URL}/api/menu-items`, requestConfig, []);
 
   function toggleChat() {
     setShowChat(prev => !prev);
