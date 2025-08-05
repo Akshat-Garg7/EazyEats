@@ -1,73 +1,86 @@
-import fs from 'node:fs/promises';
-
-import bodyParser from 'body-parser';
 import express from 'express';
+import cors from 'cors';
+import { config } from 'dotenv';
+import connectDB from './config/database.js';
+import menuRoutes from './routes/menuItem.js';
+import orderRoutes from './routes/order.js';
+import chatRoutes from './routes/chat.js';
+
+
+// Load environment variables
+config();
 
 const app = express();
 
-app.use(bodyParser.json());
-app.use(express.static('public'));
+// Connect to MongoDB
+connectDB();
 
+// Middleware
+app.use(cors({
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  credentials: true
+}));
+
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Request logging
 app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
-app.get('/meals', async (req, res) => {
-  const meals = await fs.readFile('./data/available-meals.json', 'utf8');
-  res.json(JSON.parse(meals));
+// Main routes for home page functionality
+app.use('/api/menu-items', menuRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/chat', chatRoutes);
+
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    message: 'Food Order API is running',
+    timestamp: new Date().toISOString()
+  });
 });
 
-app.post('/orders', async (req, res) => {
-  const orderData = req.body.order;
-
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  if (orderData === null || orderData.items === null || orderData.items.length === 0) {
-    return res
-      .status(400)
-      .json({ message: 'Missing data.' });
-  }
-
-  if (
-    orderData.customer.email === null ||
-    !orderData.customer.email.includes('@') ||
-    orderData.customer.name === null ||
-    orderData.customer.name.trim() === '' ||
-    orderData.customer.street === null ||
-    orderData.customer.street.trim() === '' ||
-    orderData.customer['postal-code'] === null ||
-    orderData.customer['postal-code'].trim() === '' ||
-    orderData.customer.city === null ||
-    orderData.customer.city.trim() === ''
-  ) {
-    return res.status(400).json({
-      message:
-        'Missing data: Email, name, street, postal code or city is missing.',
-    });
-  }
-
-  const newOrder = {
-    ...orderData,
-    id: (Math.random() * 1000).toString(),
-  };
-  const orders = await fs.readFile('./data/orders.json', 'utf8');
-  const allOrders = JSON.parse(orders);
-  allOrders.push(newOrder);
-  await fs.writeFile('./data/orders.json', JSON.stringify(allOrders));
-  res.status(201).json({ message: 'Order created!' });
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Food Order API',
+    endpoints: {
+      menuItems: '/api/menu-items (GET - loads all menu items with images)',
+      orders: '/api/orders (POST - create new order)',
+      health: '/health'
+    }
+  });
 });
 
-app.use((req, res) => {
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200);
-  }
+// Error handling
+app.use((error, req, res, next) => {
+  console.error('Error:', error.message);
+  
+  res.status(error.status || 500).json({
+    error: error.message || 'Something went wrong!',
+    timestamp: new Date().toISOString()
+  });
+});
 
-  res.status(404).json({ message: 'Not found' });
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({ 
+    error: 'Route not found',
+    message: `Cannot ${req.method} ${req.originalUrl}`
+  });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
+app.listen(PORT, () => {
+  console.log(`
+🍕 Food Order API Started!
+📍 http://localhost:${PORT}
+🏠 Home page endpoint: GET /api/menu-items
+📦 Order endpoint: POST /api/orders
+  `);
+});
