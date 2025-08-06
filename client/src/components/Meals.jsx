@@ -13,7 +13,7 @@ export default function Meals() {
     data: loadedMeals,
     isLoading,
     error,
-  } = useHttp(`${process.env.REACT_APP_API_URL}/api/menu-items`, requestConfig, []);
+  } = useHttp(`${import.meta.env.VITE_API_URL}/api/menu-items`, requestConfig, []);
 
   function toggleChat() {
     setShowChat(prev => !prev);
