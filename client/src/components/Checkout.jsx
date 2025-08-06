@@ -21,7 +21,7 @@ export default function Checkout() {
   const userProgressCtx = useContext(UserProgressContext);
 
   const { data, error, sendRequest, clearData } = useHttp(
-    `${import.meta.env.VITE_API_URL}/api/orders`,
+    `${import.meta.env.VITE_API_URL}api/orders`,
     requestConfig
   );
 

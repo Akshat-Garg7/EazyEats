@@ -13,7 +13,7 @@ export default function ChatWindow() {
     setInput('');
 
     try {
-      const res = await axios.post(`${import.meta.env.VITE_API_URL}/api/chat`, { query: input });
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}api/chat`, { query: input });
       const botMessage = { sender: 'bot', text: res.data.answer };
       setMessages(prev => [...prev, botMessage]);
     } catch (err) {
